@@ -1,8 +1,9 @@
 {
-	"name": "einstein",
-	"displayName": "einstein",
+	"name": "vscode-dcu-einstein",
+	"displayName": "VSCode DCU Einstein",
 	"description": "Upload tasks directly to SoC Einstein through VSCode.",
-	"version": "0.0.1",
+	"version": "1.0.0",
+	"publisher": "Hamzah",
 	"engines": {
 		"vscode": "^1.49.0"
 	},
@@ -10,7 +11,9 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:einstein.Start"
+		"onCommand:vscode-dcu-einstein.Start",
+		"onLanguage:python",
+		"onLanguage:shellscript"
 	],
 	"main": "./src/extension.js",
 	"contributes": {
@@ -40,5 +43,9 @@
 		"mocha": "^8.1.3",
 		"typescript": "^4.0.2",
 		"vscode-test": "^1.4.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/Hamzah-z/vscode-dcu-einstein.git"
 	}
 }

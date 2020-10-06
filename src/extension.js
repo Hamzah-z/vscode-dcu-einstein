@@ -198,17 +198,17 @@ function activate(context) {
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
 
-	let EinsteinStartDisp = vscode.commands.registerCommand('einstein.Start', () => { StartEinstein(context) })
-	let UploadButtonDisp = vscode.commands.registerCommand('einstein.Upload', () => { GatherUploadPrerequisites(context) })
+	let EinsteinStartDisp = vscode.commands.registerCommand('vscode-dcu-einstein.Start', () => { StartEinstein(context) })
+	let UploadButtonDisp = vscode.commands.registerCommand('vscode-dcu-einstein.Upload', () => { GatherUploadPrerequisites(context) })
 
 	let UploadButton = vscode.window.createStatusBarItem()
 	UploadButton.text = `$(arrow-up) Upload to Einstein`;
 	UploadButton.tooltip = `Upload currently open file to Einstein.`
-	UploadButton.command = 'einstein.Upload'
+	UploadButton.command = 'vscode-dcu-einstein.Upload'
 	UploadButton.show()
 
-	context.subscriptions.push(UploadButtonDisp);
 	context.subscriptions.push(EinsteinStartDisp);
+	context.subscriptions.push(UploadButtonDisp);
 
 	UpdateTasksCache()
 	.then(() => { LAST_TASK_CACHE_UPDATE = new Date() })
