@@ -3,6 +3,7 @@ const vscode = require('vscode');
 const HttpRequest = require('node-fetch');
 const crypto = require('crypto')
 const fs = require('fs')
+const ReqFormData = require('form-data');     
 
 let TASKS_CACHE = {}
 let LAST_TASK_CACHE_UPDATE;
@@ -70,7 +71,6 @@ async function AuthenticateUser() {
 async function HandleFileUpload(context, TaskName, ModuleCode) {
 	let File = vscode.window.activeTextEditor.document.fileName
 
-	const ReqFormData = require('form-data');     
 	const ReqForm = new ReqFormData();
 
 	ReqForm.append('file', fs.readFileSync(File), {
