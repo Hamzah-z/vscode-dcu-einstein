@@ -2,7 +2,7 @@
 	"name": "vscode-dcu-einstein",
 	"displayName": "VSCode DCU Einstein",
 	"description": "Upload tasks directly to SoC Einstein through VSCode.",
-	"version": "1.0.0",
+	"version": "1.0.2",
 	"publisher": "Hamzah",
 	"engines": {
 		"vscode": "^1.49.0"
@@ -19,11 +19,11 @@
 	"contributes": {
 		"commands": [
 			{
-				"command": "einstein.Start",
-				"title": "Start Einstein"
+				"command": "vscode-dcu-einstein.Start",
+				"title": "Log in to Einstein"
 			},
 			{
-				"command": "einstein.Upload",
+				"command": "vscode-dcu-einstein.Upload",
 				"title": "Upload task file to Einstein"
 			}
 		]
