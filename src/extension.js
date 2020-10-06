@@ -70,76 +70,80 @@ async function AuthenticateUser() {
 
 async function HandleFileUpload(context, TaskName, ModuleCode) {
 
-	if (!SOC_USERNAME || !SOC_PASSWORD) { 
-		AuthenticateUser();
-	} else {
-		let File = vscode.window.activeTextEditor.document.fileName
+	let File = vscode.window.activeTextEditor.document.fileName
 
-		const ReqForm = new ReqFormData();
+	const ReqForm = new ReqFormData();
+
+	ReqForm.append('file', fs.readFileSync(File), {
+		contentType: 'text/plain',
+		name: 'file',
+		filename: TaskName,
+	});
+
+	HttpRequest(`https://${ModuleCode}.computing.dcu.ie/einstein/upload`, { 
+		method: 'POST', 
+		body: ReqForm,
+		headers: {
+			'Authorization': `Basic ${Base64Encode(`${SOC_USERNAME}:${SOC_PASSWORD}`)}`
+		}
+	})
+	.then(res => {
+		if (res.status == 200) {
+			res.text()
+			.then(OutputText => {
+				console.log(OutputText)
 	
-		ReqForm.append('file', fs.readFileSync(File), {
-		  contentType: 'text/plain',
-		  name: 'file',
-		  filename: TaskName,
-		});
-	
-		HttpRequest(`https://${ModuleCode}.computing.dcu.ie/einstein/upload`, { 
-			method: 'POST', 
-			body: ReqForm,
-			headers: {
-				'Authorization': `Basic ${Base64Encode(`${SOC_USERNAME}:${SOC_PASSWORD}`)}`
-			}
-		})
-		.then(res => {
-			if (res.status == 200) {
-				res.text()
-				.then(OutputText => {
-					console.log(OutputText)
-		
-					let OutputChannel = vscode.window.createOutputChannel(`${TaskName} - Report`)
-					OutputChannel.append('REPORT FOR ' + TaskName)
-					OutputChannel.append('\n-----------------------------------------------\n')
-					OutputChannel.append(OutputText)
-					OutputChannel.append(`To view the full report visit: https://${ModuleCode}.computing.dcu.ie/einstein/report.html`)
-					OutputChannel.append('\n-----------------------------------------------')
-					OutputChannel.show(true)
-				
-					context.subscriptions.push(OutputChannel)
-				})
-				.catch((err) => { vscode.window.showErrorMessage(err) });
-			} else {
-				vscode.window.showErrorMessage('Failed to upload file, Einstein may be down.')
-			}
-		})
-		.catch((err) => { vscode.window.showErrorMessage(err) });
-	}
+				let OutputChannel = vscode.window.createOutputChannel(`${TaskName} - Report`)
+				OutputChannel.append('REPORT FOR ' + TaskName)
+				OutputChannel.append('\n-----------------------------------------------\n')
+				OutputChannel.append(OutputText)
+				OutputChannel.append(`To view the full report visit: https://${ModuleCode}.computing.dcu.ie/einstein/report.html`)
+				OutputChannel.append('\n-----------------------------------------------')
+				OutputChannel.show(true)
+			
+				context.subscriptions.push(OutputChannel)
+			})
+			.catch((err) => { vscode.window.showErrorMessage(err) });
+		} else {
+			vscode.window.showErrorMessage('Failed to upload file, Einstein may be down.')
+		}
+	})
+	.catch((err) => { vscode.window.showErrorMessage(err) });
 }
 
 async function GatherUploadPrerequisites(context) {
 
-	let DocumentNameData = vscode.window.activeTextEditor.document.fileName.split(`\\`)
-	let CurrentTaskName = DocumentNameData[DocumentNameData.length - 1]
+	if (!SOC_USERNAME || !SOC_PASSWORD) { 
+		AuthenticateUser()
+		.then(() => {
+			GatherUploadPrerequisites(context)
+		})
+		.catch((err) => { vscode.window.showErrorMessage(err) });
+	} else {
+		let DocumentNameData = vscode.window.activeTextEditor.document.fileName.split(`\\`)
+		let CurrentTaskName = DocumentNameData[DocumentNameData.length - 1]
 
-	await UpdateTasksCache().catch((err) => { vscode.window.showErrorMessage(err) });
+		await UpdateTasksCache().catch((err) => { vscode.window.showErrorMessage(err) });
 
-	const SHA1Encoder = crypto.createHash('sha1')
-	SHA1Encoder.update(CurrentTaskName)
-	let SHA1EncodedTaskName = SHA1Encoder.digest('hex') // => "0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33"
+		const SHA1Encoder = crypto.createHash('sha1')
+		SHA1Encoder.update(CurrentTaskName)
+		let SHA1EncodedTaskName = SHA1Encoder.digest('hex') // => "0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33"
 
-	if (SHA1EncodedTaskName in TASKS_CACHE) { 
-		let TaskModules = TASKS_CACHE[SHA1EncodedTaskName]
-		if (TaskModules.length == 1) { // Only one module uses this task name, carry on with it.
-			HandleFileUpload(context, CurrentTaskName, TaskModules[0])
-		} else { // If the task exists for more than one module, ask for input.
-			let ModuleCode = await DisplayInputBox('Please enter the module code you wish to upload for. This file exists in more than one.', false)
-			
-			if (!ModuleCode || !ValidModuleCodes.includes(ModuleCode)) {
-				vscode.window.showErrorMessage('Invalid module code entered.')
-			} else {
-				HandleFileUpload(context, CurrentTaskName, ModuleCode)
+		if (SHA1EncodedTaskName in TASKS_CACHE) { 
+			let TaskModules = TASKS_CACHE[SHA1EncodedTaskName]
+			if (TaskModules.length == 1) { // Only one module uses this task name, carry on with it.
+				HandleFileUpload(context, CurrentTaskName, TaskModules[0])
+			} else { // If the task exists for more than one module, ask for input.
+				let ModuleCode = await DisplayInputBox('Please enter the module code you wish to upload for. This file exists in more than one.', false)
+				
+				if (!ModuleCode || !ValidModuleCodes.includes(ModuleCode)) {
+					vscode.window.showErrorMessage('Invalid module code entered.')
+				} else {
+					HandleFileUpload(context, CurrentTaskName, ModuleCode)
+				}
 			}
-		}
-	} else { vscode.window.showErrorMessage('No such task name found on Einstein. Please ensure your file name is spelled correctly. Ensure you have the text editor selected / in focus.') }
+		} else { vscode.window.showErrorMessage('Could not find task name on Einstein. Ensure you have the text file open and selected, with the correct name.') }
+	}
 }
 
 async function FetchTasksList() {
