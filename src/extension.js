@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 // @ts-nocheck
 const vscode = require('vscode');
 const HttpRequest = require('node-fetch');
@@ -7,6 +8,7 @@ const ReqFormData = require('form-data');
 
 let TASKS_CACHE = {}
 let LAST_TASK_CACHE_UPDATE;
+let LAST_OUTPUT_WINDOW;
 
 let SOC_USERNAME;
 let SOC_PASSWORD;
@@ -108,7 +110,11 @@ async function HandleFileUpload(context, TaskName, ModuleCode) {
             if (res.status == 200) {
                 res.text()
                     .then(OutputText => {
+                        if (LAST_OUTPUT_WINDOW) LAST_OUTPUT_WINDOW.dispose() // Get rid of the previous report if there is one.
+
                         let OutputChannel = vscode.window.createOutputChannel(`Einstein Report`)
+                        LAST_OUTPUT_WINDOW = OutputChannel
+
                         OutputChannel.appendLine('REPORT FOR ' + TaskName)
                         OutputChannel.appendLine('-----------------------------------------------\n')
 
