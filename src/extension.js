@@ -68,6 +68,23 @@ async function AuthenticateUser() {
 	})
 }
 
+async function GetFailedTaskInformation(ModuleCode) {
+	return new Promise(async (resolve, reject) => {
+		HttpRequest(`https://${ModuleCode}.computing.dcu.ie/einstein/get-report?select-first-failed-test=`, { 
+			method: 'GET', 
+			headers: {
+				'Authorization': `Basic ${Base64Encode(`${SOC_USERNAME}:${SOC_PASSWORD}`)}`
+			}
+		})
+		.then(res => {
+			if (res.status == 200) {
+				resolve(res.json())
+			}
+		})
+		.catch((err) => { reject(err) });
+	})
+}
+
 async function HandleFileUpload(context, TaskName, ModuleCode) {
 
 	let File = vscode.window.activeTextEditor.document.fileName
@@ -92,13 +109,44 @@ async function HandleFileUpload(context, TaskName, ModuleCode) {
 			res.text()
 			.then(OutputText => {
 				console.log(OutputText)
-	
 				let OutputChannel = vscode.window.createOutputChannel(`${TaskName} - Report`)
-				OutputChannel.append('REPORT FOR ' + TaskName)
-				OutputChannel.append('\n-----------------------------------------------\n')
-				OutputChannel.append(OutputText)
-				OutputChannel.append(`To view the full report visit: https://${ModuleCode}.computing.dcu.ie/einstein/report.html`)
-				OutputChannel.append('\n-----------------------------------------------')
+				OutputChannel.appendLine('REPORT FOR ' + TaskName)
+				OutputChannel.appendLine('-----------------------------------------------\n')
+
+				if (OutputText.includes("incorrect")) {
+					OutputChannel.appendLine(`[FAILED] - "${TaskName}" did not pass 1 or more tasks. See additional information for all failed tasks below.\n`)
+
+					GetFailedTaskInformation(ModuleCode)
+					.then((JSONResponse) => {
+						let Results = JSONResponse.results
+						for (let i in Results) {
+							let Result = Results[i]
+							
+							if (!Result.correct) {
+								OutputChannel.appendLine(`Test: ${Result.test} | INCORRECT\n`)
+								OutputChannel.appendLine(`[!] Standard Output (your file):`)
+								OutputChannel.appendLine(`${Result.stdout}`)
+								OutputChannel.appendLine(`[!] Expected Output:`)
+								OutputChannel.appendLine(`${Result.expected}`)
+								OutputChannel.appendLine(`[!] Standard Error:`)
+								OutputChannel.appendLine(`${Result.stderr == "" ? "N/A" : Result.stderr}`)
+								OutputChannel.appendLine(`\n--------\n`)
+							}
+						}
+
+						OutputChannel.appendLine(`To view the full report visit: https://${ModuleCode}.computing.dcu.ie/einstein/report.html`)
+						OutputChannel.appendLine('\n-----------------------------------------------')
+					})
+					.catch(err => {
+						OutputChannel.appendLine('[ERROR] Could not parse results:')
+						OutputChannel.appendLine(err)
+					})
+				} else {
+					OutputChannel.appendLine(`[PASSED] - "${TaskName}" passed all test cases successfully. \n`)
+					OutputChannel.appendLine(`To view the full report visit: https://${ModuleCode}.computing.dcu.ie/einstein/report.html`)
+					OutputChannel.appendLine('\n-----------------------------------------------')
+				}
+				//https://ca282.computing.dcu.ie/einstein/get-report?select-first-failed-test=
 				OutputChannel.show(true)
 			
 				context.subscriptions.push(OutputChannel)
@@ -191,7 +239,7 @@ async function UpdateTasksCache() {
 //
 
 async function DisplayInputBox(PlaceholderText, IsPassword) {
-	let UserInputWindow = await vscode.window.showInputBox({ prompt: PlaceholderText, password: IsPassword });
+	let UserInputWindow = await vscode.window.showInputBox({ prompt: PlaceholderText, password: IsPassword, ignoreFocusOut: true });
 
 	return UserInputWindow;
 }
