@@ -24,7 +24,7 @@ let ValidModuleCodes = ["ca114", "ca116", "ca117", "ca146", "ca167", "ca5980", "
 
 async function StartEinstein(context) {
     let GlobalStorage = context.globalState.get('EINSTEIN_AUTH')
-
+    console.log(GlobalStorage['USERNAME'], GlobalStorage['PASSWORD'])
     if (!GlobalStorage) {
         AuthenticateUser()
             .then(msg => {
