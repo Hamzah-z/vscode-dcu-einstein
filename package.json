@@ -2,7 +2,7 @@
 	"name": "vscode-dcu-einstein",
 	"displayName": "VSCode DCU Einstein",
 	"description": "Upload tasks directly to SoC Einstein through VSCode.",
-	"version": "1.1.3",
+	"version": "1.1.4",
 	"publisher": "Hamzah",
 	"engines": {
 		"vscode": "^1.49.0"
