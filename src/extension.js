@@ -13,7 +13,7 @@ let LAST_OUTPUT_WINDOW;
 let SOC_USERNAME;
 let SOC_PASSWORD;
 
-let ValidModuleCodes = ["ca114", "ca116", "ca117", "ca146", "ca167", "ca5980", "ca177", "ca216", "ca282", "ca284", "ca247", "ca277", "ca297", "ca267", "ca644", "be115"]
+let ValidModuleCodes = ["ca114", "ca116", "ca117", "ca146", "ca167", "ca170", "ca5980", "ca177", "ca216", "ca282", "ca284", "ca247", "ca277", "ca297", "ca267", "ca644", "be115"]
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
