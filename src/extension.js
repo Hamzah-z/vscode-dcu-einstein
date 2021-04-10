@@ -177,7 +177,7 @@ async function GatherUploadPrerequisites(context) {
         let CurrentTaskName = DocumentNameData[DocumentNameData.length - 1]
 
         await UpdateTasksCache().catch((err) => { vscode.window.showErrorMessage(err) });
-
+        console.log(CurrentTaskName)
         const SHA1Encoder = crypto.createHash('sha1')
         SHA1Encoder.update(CurrentTaskName)
         let SHA1EncodedTaskName = SHA1Encoder.digest('hex') // => "0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33"
