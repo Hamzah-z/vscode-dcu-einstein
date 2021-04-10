@@ -174,10 +174,12 @@ async function GatherUploadPrerequisites(context) {
             .catch((err) => { vscode.window.showErrorMessage(err) });
     } else {
         let DocumentNameData = vscode.window.activeTextEditor.document.fileName.split(`\\`)
-        let CurrentTaskName = DocumentNameData[DocumentNameData.length - 1]
+        let CurrentFileName = DocumentNameData[DocumentNameData.length - 1]
+        let SplitTaskName = CurrentFileName.split("/") // Used to split the file path (for Linux/Mac machines) and fetch the filename only.
+        let CurrentTaskName = SplitTaskName.pop()
 
         await UpdateTasksCache().catch((err) => { vscode.window.showErrorMessage(err) });
-        console.log(CurrentTaskName)
+
         const SHA1Encoder = crypto.createHash('sha1')
         SHA1Encoder.update(CurrentTaskName)
         let SHA1EncodedTaskName = SHA1Encoder.digest('hex') // => "0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33"
