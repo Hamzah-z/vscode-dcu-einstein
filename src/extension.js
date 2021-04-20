@@ -238,6 +238,9 @@ async function UpdateTasksCache() {
 
                         resolve(TASKS_CACHE)
                     })
+                    .catch(err => { 
+                        console.log(err)
+                    })
             })
             .catch((err) => {
                 reject(err)

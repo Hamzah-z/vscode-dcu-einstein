@@ -43,6 +43,9 @@
 	},
 	"devDependencies": {
 		"es-abstract": "^1.17.7",
+		"function.prototype.name": "^1.1.1",
+		"i": "^0.3.6",
+		"npm": "^7.9.0",
 		"object.entries": "^1.1.0"
 	}
 }
